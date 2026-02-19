@@ -118,6 +118,10 @@ export class TaskStore {
         await this.runCli(['run', taskId]);
     }
 
+    async rescheduleTask(taskId, schedule) {
+        await this.runCli(['reschedule', taskId, '--schedule', schedule]);
+    }
+
     openTerminal(taskId) {
         try {
             const unit = `cursor-task-${taskId}.service`;
