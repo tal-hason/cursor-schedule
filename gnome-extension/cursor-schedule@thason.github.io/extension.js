@@ -32,7 +32,7 @@ export default class CursorScheduleExtension extends Extension {
 
         const pill = new St.BoxLayout({style_class: 'cs-pill'});
 
-        const logoPath = this.metadata.dir.get_child('icons').get_child('cursor-logo-symbolic.svg').get_path();
+        const logoPath = this.metadata.dir.get_child('icons').get_child('cursor-logo-32.png').get_path();
         const logoGicon = Gio.icon_new_for_string(logoPath);
         this._logo = new St.Icon({gicon: logoGicon, style_class: 'cs-logo-icon'});
         pill.add_child(this._logo);
