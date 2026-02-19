@@ -5,6 +5,7 @@
 // 3. [Gotcha]: All async calls wrapped in try/catch to prevent shell crash.
 
 import St from 'gi://St';
+import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 
 const STATUS_ICONS = {
@@ -35,7 +36,8 @@ class TaskPanel extends St.BoxLayout {
         header.add_child(new St.Label({text: 'Cursor Schedule', x_expand: true, style_class: 'cs-title'}));
         const syncBtn = new St.Button({style_class: 'cs-header-btn', child:
             new St.Icon({icon_name: 'emblem-synchronizing-symbolic', icon_size: 14})});
-        syncBtn.connect('clicked', () => this.refresh());
+        syncBtn.connect('clicked', () => this.refresh().catch(e =>
+            console.error(`[cursor-schedule] sync: ${e.message}`)));
         header.add_child(syncBtn);
         this.add_child(header);
     }
@@ -78,46 +80,56 @@ class TaskPanel extends St.BoxLayout {
     }
 
     _buildRow(task) {
-        const row = new St.BoxLayout({style_class: `cs-row cs-status-${task.status}`, reactive: true});
+        const row = new St.BoxLayout({style_class: `cs-row cs-status-${task.status}`});
         row.add_child(new St.Icon({
             icon_name: STATUS_ICONS[task.status] ?? 'dialog-question-symbolic',
             style_class: 'cs-status-icon',
         }));
-        const labels = new St.BoxLayout({vertical: true, x_expand: true});
+
+        const labels = new St.BoxLayout({vertical: true, x_expand: true, reactive: true});
         labels.add_child(new St.Label({text: task.name ?? task.id, style_class: 'cs-task-name'}));
         labels.add_child(new St.Label({text: `${task.schedule}  ·  ${task.status}`, style_class: 'cs-task-meta'}));
+        labels.connect('button-press-event', () => {
+            this._onRowClick(task.id).catch(e =>
+                console.error(`[cursor-schedule] row click: ${e.message}`));
+            return Clutter.EVENT_STOP;
+        });
         row.add_child(labels);
-        row.add_child(this._buildActions(task));
-        row.connect('button-press-event', () => this._onRowClick(task.id));
+
+        if (task.status === 'waiting' || task.status === 'running') {
+            if (task.status === 'waiting')
+                row.add_child(this._actionBtn('media-playback-start-symbolic', 'Run Now', task.id, 'run'));
+            row.add_child(this._actionBtn('process-stop-symbolic', 'Cancel', task.id, 'cancel'));
+        }
+        row.add_child(this._actionBtn('utilities-terminal-symbolic', 'Open Terminal', task.id, 'terminal'));
         return row;
     }
 
-    _buildActions(task) {
-        const box = new St.BoxLayout({style_class: 'cs-actions'});
-        if (task.status === 'waiting') {
-            box.add_child(this._actionBtn('media-playback-start-symbolic', 'Run', () => this._onRun(task.id)));
-            box.add_child(this._actionBtn('process-stop-symbolic', 'Cancel', () => this._onCancel(task.id)));
-        } else if (task.status === 'running') {
-            box.add_child(this._actionBtn('process-stop-symbolic', 'Cancel', () => this._onCancel(task.id)));
-        }
-        box.add_child(this._actionBtn('utilities-terminal-symbolic', 'Logs', () => this._store.openTerminal(task.id)));
-        return box;
-    }
-
-    _actionBtn(iconName, tooltip, callback) {
-        const btn = new St.Button({style_class: 'cs-action-btn', child:
-            new St.Icon({icon_name: iconName, icon_size: 14})});
+    _actionBtn(iconName, tooltip, taskId, action) {
+        const btn = new St.Button({
+            style_class: 'cs-action-btn',
+            child: new St.Icon({icon_name: iconName, icon_size: 14}),
+        });
         btn.set_accessible_name(tooltip);
-        btn.connect('clicked', () => { try { callback(); } catch (e) { console.error(`[cursor-schedule] ${e.message}`); } });
+        btn.connect('clicked', () => {
+            console.log(`[cursor-schedule] action: ${action} ${taskId}`);
+            this._handleAction(action, taskId).catch(e =>
+                console.error(`[cursor-schedule] ${action} error: ${e.message}`));
+            return Clutter.EVENT_STOP;
+        });
         return btn;
     }
 
-    async _onRun(taskId) {
-        try { await this._store.runTask(taskId); this.refresh(); } catch (e) { console.error(`[cursor-schedule] run: ${e.message}`); }
-    }
-
-    async _onCancel(taskId) {
-        try { await this._store.cancelTask(taskId); this.refresh(); } catch (e) { console.error(`[cursor-schedule] cancel: ${e.message}`); }
+    async _handleAction(action, taskId) {
+        if (action === 'run') {
+            await this._store.runTask(taskId);
+            await this.refresh();
+        } else if (action === 'cancel') {
+            await this._store.cancelTask(taskId);
+            await this.refresh();
+        } else if (action === 'terminal') {
+            this._store.openTerminal(taskId);
+        }
     }
 
     async _onRowClick(taskId) {
