@@ -93,7 +93,9 @@ def remove_units(task_id):
 
 def start_service(task_id):
     unit = f"{UNIT_PREFIX}{task_id}.service"
-    subprocess.run(["systemctl", "--user", "start", unit], check=True, timeout=10)
+    subprocess.run(
+        ["systemctl", "--user", "start", "--no-block", unit], check=True, timeout=10,
+    )
 
 
 def _agent_path():

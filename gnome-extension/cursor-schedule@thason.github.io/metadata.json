@@ -1,7 +1,8 @@
 {
   "uuid": "cursor-schedule@thason.github.io",
   "name": "Cursor Schedule",
-  "description": "Probe: minimal indicator + popover + subprocess",
+  "description": "Schedule and monitor Cursor Agent tasks from the top bar",
   "shell-version": ["45", "46", "47", "48", "49"],
+  "version": 1,
   "url": "https://github.com/thason/cursor-schedule"
 }
