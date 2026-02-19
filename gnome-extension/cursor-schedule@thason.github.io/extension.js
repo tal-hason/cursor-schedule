@@ -5,6 +5,7 @@
 // 3. [Gotcha]: disable() must clean up ALL resources -- FileMonitor, timeouts, widgets.
 
 import St from 'gi://St';
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -28,22 +29,30 @@ export default class CursorScheduleExtension extends Extension {
         this._hoverPollId = 0;
 
         this._indicator = new PanelMenu.Button(0.0, this.metadata.name, false);
-        this._icon = new St.Icon({icon_name: ICONS.idle, style_class: 'system-status-icon'});
+
+        const pill = new St.BoxLayout({style_class: 'cs-pill'});
+
+        const logoPath = this.metadata.dir.get_child('icons').get_child('cursor-logo-symbolic.svg').get_path();
+        const logoGicon = Gio.icon_new_for_string(logoPath);
+        this._logo = new St.Icon({gicon: logoGicon, style_class: 'cs-logo-icon'});
+        pill.add_child(this._logo);
+
+        this._icon = new St.Icon({icon_name: ICONS.idle, style_class: 'cs-status-indicator'});
+        pill.add_child(this._icon);
+
         this._badge = new St.Label({style_class: 'cs-badge', text: ''});
+        pill.add_child(this._badge);
 
         this._termIcon = new St.Icon({
             icon_name: 'utilities-terminal-symbolic',
-            style_class: 'system-status-icon cs-term-icon',
+            style_class: 'cs-term-icon',
             reactive: true, track_hover: true, visible: false,
         });
         this._termIcon.connect('enter-event', () => this._showLogPopup());
         this._termIcon.connect('leave-event', () => this._scheduleHidePopup());
+        pill.add_child(this._termIcon);
 
-        const box = new St.BoxLayout({style_class: 'panel-status-indicators-box'});
-        box.add_child(this._icon);
-        box.add_child(this._badge);
-        box.add_child(this._termIcon);
-        this._indicator.add_child(box);
+        this._indicator.add_child(pill);
 
         this._logPopup = this._buildLogPopup();
         Main.layoutManager.addTopChrome(this._logPopup);
@@ -74,6 +83,7 @@ export default class CursorScheduleExtension extends Extension {
         this._store = null;
         this._settings = null;
         this._panel = null;
+        this._logo = null;
         this._icon = null;
         this._badge = null;
         this._termIcon = null;

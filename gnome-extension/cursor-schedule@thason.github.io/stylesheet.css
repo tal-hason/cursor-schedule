@@ -1,6 +1,24 @@
 /* gnome-extension/cursor-schedule@thason.github.io/stylesheet.css */
 
-/* Top bar indicator */
+/* Top bar pill indicator */
+.cs-pill {
+    background-color: rgba(0, 0, 0, 0.55);
+    border-radius: 99px;
+    padding: 2px 8px;
+    spacing: 5px;
+    margin: 4px 0;
+}
+
+.cs-logo-icon {
+    icon-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.cs-status-indicator {
+    icon-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .cs-indicator-waiting { color: #62a0ea; }
 .cs-indicator-running { color: #f8e45c; }
 .cs-indicator-failed { color: #ff6b6b; }
@@ -9,12 +27,15 @@
     font-size: 9px;
     font-weight: bold;
     min-width: 0;
-    margin-left: 1px;
-    color: #f8e45c;
+    color: white;
+    background-color: #3584e4;
+    border-radius: 99px;
+    padding: 0 4px;
+    margin: 2px 0;
 }
 
 .cs-term-icon {
-    margin-left: 4px;
+    icon-size: 14px;
     color: #62a0ea;
 }
 
