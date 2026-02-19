@@ -14,7 +14,8 @@ import {TaskPanel} from './taskPanel.js';
 
 export default class CursorScheduleExtension extends Extension {
     enable() {
-        this._store = new TaskStore();
+        this._settings = this.getSettings();
+        this._store = new TaskStore(this._settings);
         this._indicator = new PanelMenu.Button(0.0, this.metadata.name, false);
 
         const icon = new St.Icon({
@@ -43,6 +44,7 @@ export default class CursorScheduleExtension extends Extension {
     disable() {
         this._store?.stopMonitor();
         this._store = null;
+        this._settings = null;
         this._panel = null;
         this._indicator?.destroy();
         this._indicator = null;

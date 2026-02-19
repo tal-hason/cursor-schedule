@@ -7,16 +7,27 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-const CURSOR_SCHEDULE_BIN = '/home/thason/.local/bin/cursor-schedule';
 const TASKS_PATH = GLib.build_filenamev([
     GLib.get_home_dir(), '.local', 'share', 'cursor-schedule', 'tasks.json',
 ]);
 
 export class TaskStore {
-    constructor() {
+    constructor(settings) {
+        this._settings = settings;
         this._monitor = null;
         this._debounceId = 0;
         this._onChange = null;
+    }
+
+    _getBin() {
+        const custom = this._settings?.get_string('binary-path');
+        if (custom && custom.length > 0)
+            return custom;
+        return GLib.find_program_in_path('cursor-schedule') ?? 'cursor-schedule';
+    }
+
+    _getLogLines() {
+        return this._settings?.get_int('log-lines') ?? 50;
     }
 
     startMonitor(callback) {
@@ -53,7 +64,7 @@ export class TaskStore {
     async runCli(args) {
         try {
             const proc = Gio.Subprocess.new(
-                [CURSOR_SCHEDULE_BIN, ...args],
+                [this._getBin(), ...args],
                 Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
             );
             const [, stdout, stderr] = await new Promise((resolve, reject) => {
@@ -86,9 +97,23 @@ export class TaskStore {
     }
 
     async fetchLogs(taskId) {
-        const {stdout} = await this.runCli([
-            'logs', taskId,
-        ]);
-        return stdout;
+        const n = this._getLogLines();
+        try {
+            const proc = Gio.Subprocess.new(
+                ['journalctl', '--user', '-u', `cursor-task-${taskId}.service`,
+                 '--no-pager', `-n${n}`],
+                Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
+            );
+            const [, stdout] = await new Promise((resolve, reject) => {
+                proc.communicate_utf8_async(null, null, (src, res) => {
+                    try { resolve(src.communicate_utf8_finish(res)); }
+                    catch (e) { reject(e); }
+                });
+            });
+            return stdout ?? '';
+        } catch (e) {
+            console.error(`[cursor-schedule] logs error: ${e.message}`);
+            return `Error: ${e.message}`;
+        }
     }
 }

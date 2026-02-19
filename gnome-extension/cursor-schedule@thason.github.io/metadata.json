@@ -3,6 +3,7 @@
   "name": "Cursor Schedule",
   "description": "Schedule and monitor Cursor Agent tasks from the top bar",
   "shell-version": ["45", "46", "47", "48", "49"],
-  "version": 1,
+  "version": 2,
+  "settings-schema": "org.gnome.shell.extensions.cursor-schedule",
   "url": "https://github.com/thason/cursor-schedule"
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.cursor-schedule"
+          path="/org/gnome/shell/extensions/cursor-schedule/">
+
+    <key name="binary-path" type="s">
+      <default>''</default>
+      <summary>cursor-schedule binary path</summary>
+      <description>
+        Absolute path to the cursor-schedule CLI binary.
+        Leave empty to auto-detect from PATH.
+      </description>
+    </key>
+
+    <key name="log-lines" type="i">
+      <default>50</default>
+      <summary>Log lines to display</summary>
+      <description>
+        Number of journal log lines to show in the popover log viewer.
+      </description>
+    </key>
+
+  </schema>
+</schemalist>
