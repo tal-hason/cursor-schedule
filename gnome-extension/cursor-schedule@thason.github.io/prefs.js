@@ -38,11 +38,20 @@ export default class CursorSchedulePreferences extends ExtensionPreferences {
         const logAdj = new Gtk.Adjustment({lower: 10, upper: 500, step_increment: 10, value: settings.get_int('log-lines')});
         const logRow = new Adw.SpinRow({
             title: 'Log Lines',
-            subtitle: 'Number of journal lines to show',
+            subtitle: 'Number of journal lines to show in the popover',
             adjustment: logAdj,
         });
         settings.bind('log-lines', logAdj, 'value', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(logRow);
+
+        const timeoutAdj = new Gtk.Adjustment({lower: 1, upper: 60, step_increment: 1, value: settings.get_int('popup-timeout')});
+        const timeoutRow = new Adw.SpinRow({
+            title: 'Popup Timeout',
+            subtitle: 'Seconds the hover log popup stays visible after cursor leaves',
+            adjustment: timeoutAdj,
+        });
+        settings.bind('popup-timeout', timeoutAdj, 'value', Gio.SettingsBindFlags.DEFAULT);
+        uiGroup.add(timeoutRow);
         page.add(uiGroup);
 
         window.add(page);

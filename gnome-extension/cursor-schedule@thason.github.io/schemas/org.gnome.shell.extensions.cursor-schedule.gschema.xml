@@ -20,5 +20,13 @@
       </description>
     </key>
 
+    <key name="popup-timeout" type="i">
+      <default>15</default>
+      <summary>Log popup timeout (seconds)</summary>
+      <description>
+        How long the hover log popup stays visible after the cursor leaves.
+      </description>
+    </key>
+
   </schema>
 </schemalist>
