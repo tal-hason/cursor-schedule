@@ -1,5 +1,18 @@
 /* gnome-extension/cursor-schedule@thason.github.io/stylesheet.css */
 
+/* Top bar indicator */
+.cs-indicator-waiting { color: #3584e4; }
+.cs-indicator-running { color: #e5a50a; }
+.cs-indicator-failed { color: #e01b24; }
+
+.cs-badge {
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 0;
+    margin-left: 2px;
+}
+
+/* Popover */
 .cs-panel {
     width: 400px;
     padding: 8px;
