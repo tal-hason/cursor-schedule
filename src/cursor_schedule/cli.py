@@ -28,10 +28,11 @@ def cli():
     """Scheduled task execution for Cursor Agent."""
 
 
-from cursor_schedule.cli_extra import sync, purge, remove, uninstall  # noqa: E402
+from cursor_schedule.cli_extra import sync, purge, remove, reschedule, uninstall  # noqa: E402
 cli.add_command(sync)
 cli.add_command(purge)
 cli.add_command(remove)
+cli.add_command(reschedule)
 cli.add_command(uninstall)
 
 

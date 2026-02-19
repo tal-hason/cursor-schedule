@@ -43,6 +43,24 @@ def remove(task_id):
 
 
 @click.command()
+@click.argument("task_id")
+@click.option("--schedule", required=True, help="New systemd OnCalendar expression.")
+def reschedule(task_id, schedule):
+    """Change the schedule of an existing task."""
+    from cursor_schedule.store import get_task, update_task
+    from cursor_schedule.systemd import remove_units, create_units, enable_timer
+    task = get_task(task_id)
+    if not task:
+        click.secho(f"Error: task '{task_id}' not found.", fg="red")
+        raise SystemExit(1)
+    remove_units(task_id)
+    create_units(task_id, schedule, task["workspace"], task["prompt"], task.get("model"))
+    enable_timer(task_id)
+    update_task(task_id, schedule=schedule, status="waiting", completed_at=None, exit_code=None)
+    click.secho(f"Task '{task_id}' rescheduled: {schedule}", fg="green")
+
+
+@click.command()
 @click.option("--completed", is_flag=True, help="Remove completed tasks.")
 @click.option("--failed", is_flag=True, help="Remove failed tasks.")
 @click.option("--all", "purge_all", is_flag=True, help="Remove all finished tasks.")
