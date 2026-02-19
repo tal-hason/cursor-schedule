@@ -96,10 +96,14 @@ class TaskPanel extends St.BoxLayout {
         });
         row.add_child(labels);
 
-        if (task.status === 'waiting' || task.status === 'running') {
-            if (task.status === 'waiting')
-                row.add_child(this._actionBtn('media-playback-start-symbolic', 'Run Now', task.id, 'run'));
+        if (task.status === 'waiting') {
+            row.add_child(this._actionBtn('media-playback-start-symbolic', 'Run Now', task.id, 'run'));
             row.add_child(this._actionBtn('process-stop-symbolic', 'Cancel', task.id, 'cancel'));
+        } else if (task.status === 'running') {
+            row.add_child(this._actionBtn('process-stop-symbolic', 'Cancel', task.id, 'cancel'));
+        } else {
+            row.add_child(this._actionBtn('view-refresh-symbolic', 'Rerun', task.id, 'rerun'));
+            row.add_child(this._actionBtn('edit-delete-symbolic', 'Remove', task.id, 'remove'));
         }
         row.add_child(this._actionBtn('utilities-terminal-symbolic', 'Open Terminal', task.id, 'terminal'));
         return row;
@@ -121,11 +125,14 @@ class TaskPanel extends St.BoxLayout {
     }
 
     async _handleAction(action, taskId) {
-        if (action === 'run') {
-            await this._store.runTask(taskId);
+        if (action === 'run' || action === 'rerun') {
+            await this._store.rerunTask(taskId);
             await this.refresh();
         } else if (action === 'cancel') {
             await this._store.cancelTask(taskId);
+            await this.refresh();
+        } else if (action === 'remove') {
+            await this._store.removeTask(taskId);
             await this.refresh();
         } else if (action === 'terminal') {
             this._store.openTerminal(taskId);

@@ -29,6 +29,20 @@ def sync():
 
 
 @click.command()
+@click.argument("task_id")
+def remove(task_id):
+    """Remove a single task and its systemd units."""
+    from cursor_schedule.store import get_task
+    task = get_task(task_id)
+    if not task:
+        click.secho(f"Error: task '{task_id}' not found.", fg="red")
+        raise SystemExit(1)
+    remove_units(task_id)
+    remove_task(task_id)
+    click.secho(f"Task '{task_id}' removed.", fg="green")
+
+
+@click.command()
 @click.option("--completed", is_flag=True, help="Remove completed tasks.")
 @click.option("--failed", is_flag=True, help="Remove failed tasks.")
 @click.option("--all", "purge_all", is_flag=True, help="Remove all finished tasks.")

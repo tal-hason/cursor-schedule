@@ -28,9 +28,10 @@ def cli():
     """Scheduled task execution for Cursor Agent."""
 
 
-from cursor_schedule.cli_extra import sync, purge, uninstall  # noqa: E402
+from cursor_schedule.cli_extra import sync, purge, remove, uninstall  # noqa: E402
 cli.add_command(sync)
 cli.add_command(purge)
+cli.add_command(remove)
 cli.add_command(uninstall)
 
 
@@ -42,7 +43,8 @@ cli.add_command(uninstall)
 @click.option("--model", default=None, help="Model to pass to cursor-agent.")
 @click.option("--plan", "plan_path", default=None, type=click.Path(), help="Plan file path.")
 @click.option("--force", is_flag=True, help="Overwrite existing task with same name.")
-def add(name, workspace, prompt, schedule, model, plan_path, force):
+@click.option("--rm", "auto_remove", is_flag=True, help="Auto-remove task after completion.")
+def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove):
     """Register a new scheduled task."""
     if not shutil.which("cursor-agent"):
         click.secho("Error: cursor-agent not found on PATH.", fg="red")
@@ -60,8 +62,9 @@ def add(name, workspace, prompt, schedule, model, plan_path, force):
     except Exception as e:
         click.secho(f"Error creating systemd units: {e}", fg="red")
         sys.exit(2)
-    add_task(name, name, schedule, prompt, workspace, model, plan_path)
-    click.secho(f"Task '{name}' scheduled: {schedule}", fg="green")
+    add_task(name, name, schedule, prompt, workspace, model, plan_path, auto_remove)
+    rm_note = " (auto-remove on completion)" if auto_remove else ""
+    click.secho(f"Task '{name}' scheduled: {schedule}{rm_note}", fg="green")
 
 
 @cli.command("list")

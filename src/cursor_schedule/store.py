@@ -58,12 +58,12 @@ def list_tasks(status_filter=None):
     return tasks
 
 
-def add_task(task_id, name, schedule, prompt, workspace, model=None, plan_path=None):
+def add_task(task_id, name, schedule, prompt, workspace, model=None, plan_path=None, auto_remove=False):
     data = _read_store()
     task = {
         "id": task_id, "name": name, "schedule": schedule, "prompt": prompt,
         "plan_path": plan_path, "workspace": workspace, "model": model,
-        "status": "waiting",
+        "status": "waiting", "auto_remove": auto_remove,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "completed_at": None, "exit_code": None,
     }
@@ -128,6 +128,12 @@ def sync_from_systemd():
             task["exit_code"] = 0
             task["completed_at"] = timestamp
             changed = True
+
+    auto_rm = [t["id"] for t in data["tasks"]
+               if t.get("auto_remove") and t["status"] in ("completed", "failed")]
+    if auto_rm:
+        data["tasks"] = [t for t in data["tasks"] if t["id"] not in auto_rm]
+        changed = True
 
     if changed:
         _atomic_write(data)

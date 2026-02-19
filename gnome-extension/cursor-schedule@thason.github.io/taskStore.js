@@ -110,6 +110,14 @@ export class TaskStore {
         await this.runCli(['cancel', taskId]);
     }
 
+    async removeTask(taskId) {
+        await this.runCli(['remove', taskId]);
+    }
+
+    async rerunTask(taskId) {
+        await this.runCli(['run', taskId]);
+    }
+
     openTerminal(taskId) {
         try {
             const unit = `cursor-task-${taskId}.service`;
