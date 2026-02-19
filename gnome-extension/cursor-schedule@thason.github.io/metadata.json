@@ -1,0 +1,7 @@
+{
+  "uuid": "cursor-schedule@thason.github.io",
+  "name": "Cursor Schedule",
+  "description": "Probe: minimal indicator + popover + subprocess",
+  "shell-version": ["45", "46", "47", "48", "49"],
+  "url": "https://github.com/thason/cursor-schedule"
+}

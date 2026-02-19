@@ -1,0 +1,41 @@
+---
+description: "Safety constraints for GNOME Shell extension code."
+globs: "gnome-extension/**/*.{js,css}"
+alwaysApply: false
+---
+
+# GNOME Shell Extension Guard Rails
+
+## CRITICAL -- Async Only
+All `Gio.Subprocess` calls MUST use `communicate_utf8_async()`. Synchronous subprocess
+or file I/O in extension context freezes the entire GNOME Shell. Pattern:
+
+```javascript
+const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
+const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
+```
+
+## CRITICAL -- Error Containment
+Every async call MUST be wrapped in `try/catch`. Unhandled exceptions propagate to
+`gnome-shell` and crash it. On Wayland, recovery = logout/login.
+
+## St Widgets Only
+Extensions cannot use Gtk widgets. Use: `St.BoxLayout`, `St.Label`, `St.Icon`,
+`St.ScrollView`, `St.Button`. No `Gtk.` imports.
+
+## FileMonitor Debounce
+`Gio.FileMonitor` fires twice during atomic writes (tmp create + rename).
+Debounce with `GLib.timeout_add(200, ...)` before refreshing the UI.
+
+## Shell Version
+`metadata.json` must include all supported versions: `["45","46","47","48","49"]`.
+Test on the host version (GNOME 49.4).
+
+## Cleanup in disable()
+All `GLib.timeout_add` handles, `Gio.FileMonitor` instances, and `Gio.Subprocess`
+references MUST be cleaned up in `disable()`. GNOME calls `disable()` on screen lock,
+extension toggle, and shell restart. Leaked resources crash the shell.
+
+## Logging
+Use `console.log()` / `console.error()` (GNOME 45+ API). Prefix all messages
+with `[cursor-schedule]`. Output goes to `journalctl -f /usr/bin/gnome-shell`.

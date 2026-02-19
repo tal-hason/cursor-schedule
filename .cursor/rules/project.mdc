@@ -1,0 +1,31 @@
+---
+description: "Project-level conventions for cursor-schedule."
+globs: "**/*.{py,js,css,json,md}"
+alwaysApply: true
+---
+
+# cursor-schedule Project Conventions
+
+## File Structure
+- Every source file starts with a relative path comment (`# src/cursor_schedule/store.py` or `// gnome-extension/.../extension.js`).
+- Files are <=100 lines. If approaching the limit, split by concern.
+
+## Python
+- Absolute imports within the package: `from cursor_schedule.store import TaskStore`. No relative imports.
+- ESM-style modules only. No CommonJS patterns.
+
+## GJS (GNOME Extension)
+- ESM imports: `import ... from './taskStore.js'`. No legacy GJS `imports.` syntax.
+
+## Module Boundaries
+- `store.py` owns `tasks.json` -- no other module reads/writes it directly.
+- `systemd.py` owns unit files -- no other module calls `systemctl` directly.
+- `cli.py` orchestrates store + systemd; it is the only entry point for mutations.
+- `taskStore.js` is the only GJS module that calls CLI subprocesses or reads `tasks.json`.
+
+## Naming
+- systemd units are always `cursor-task-<id>`. No other prefixes.
+- Task IDs are lowercase alphanumeric + hyphens. No underscores, no spaces.
+
+## AI Shebang
+- Enforced on all `.py` and `.js` files per the global ai-shebang rule.

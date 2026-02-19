@@ -1,0 +1,38 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cursor-schedule"
+version = "0.1.0"
+description = "Scheduled task execution for Cursor Agent via systemd timers"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "thason" },
+]
+keywords = ["cursor", "agent", "scheduler", "systemd", "automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+    "click>=8.0",
+]
+
+[project.scripts]
+cursor-schedule = "cursor_schedule.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/thason/cursor-schedule"
+Repository = "https://github.com/thason/cursor-schedule"
+Issues = "https://github.com/thason/cursor-schedule/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]

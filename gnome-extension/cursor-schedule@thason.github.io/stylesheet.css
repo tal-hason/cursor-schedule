@@ -1,0 +1,65 @@
+/* gnome-extension/cursor-schedule@thason.github.io/stylesheet.css */
+
+.cs-panel {
+    width: 380px;
+    padding: 8px;
+}
+
+.cs-scroll {
+    max-height: 240px;
+}
+
+.cs-task-list {
+    spacing: 4px;
+}
+
+.cs-row {
+    padding: 6px 8px;
+    border-radius: 6px;
+    spacing: 8px;
+}
+
+.cs-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.cs-status-icon {
+    icon-size: 16px;
+}
+
+.cs-task-name {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.cs-task-meta {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.cs-status-waiting .cs-status-icon { color: #3584e4; }
+.cs-status-running .cs-status-icon { color: #e5a50a; }
+.cs-status-completed .cs-status-icon { color: #33d17a; }
+.cs-status-failed .cs-status-icon { color: #e01b24; }
+.cs-status-cancelled .cs-status-icon { color: #9a9996; }
+
+.cs-empty {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 12px;
+}
+
+.cs-log-scroll {
+    max-height: 160px;
+    margin-top: 8px;
+    border-top-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    padding-top: 8px;
+}
+
+.cs-log-viewer {
+    font-family: monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 4px 8px;
+}

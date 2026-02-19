@@ -1,0 +1,41 @@
+---
+description: "Conventions for the cursor-schedule Python CLI."
+globs: "src/cursor_schedule/**/*.py"
+alwaysApply: false
+---
+
+# Python CLI Patterns
+
+## Click Conventions
+- Top-level `@click.group()` in `cli.py`. Each subcommand is `@cli.command()`.
+- Use `@click.option()` with explicit `--help` text.
+- Use `click.echo()` for output, `click.secho()` for colored status.
+
+## Store Locking (store.py)
+- Reads acquire `fcntl.flock(LOCK_SH)`.
+- Writes acquire `LOCK_EX`, write to `.tmp`, then `os.replace()` (atomic on POSIX).
+- Never hold the lock across subprocess calls.
+
+## Systemd Templates (systemd.py)
+- Unit file content is generated from multiline f-strings.
+- Always call `systemctl --user daemon-reload` after creating/modifying units.
+
+## Idempotency
+- `add` errors on duplicate name unless `--force`. `cancel` is idempotent.
+- `purge` is idempotent. `sync` is always safe to re-run.
+
+## Pre-flight in add
+- Validate `--workspace` path exists.
+- Validate `cursor-agent` is on `$PATH`.
+- Validate systemd user session is active.
+- Fail with clear error messages before creating any units.
+
+## Exit Codes
+- 0 = success
+- 1 = user error (bad args, missing workspace)
+- 2 = system error (systemd failure, store corruption)
+
+## JSON Output
+- `list --json` outputs valid JSON to stdout.
+- Human-readable table goes to stdout when `--json` is not set.
+- This allows piping: `cursor-schedule list --json | jq ...`
