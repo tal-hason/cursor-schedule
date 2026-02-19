@@ -1,15 +1,53 @@
 /* gnome-extension/cursor-schedule@thason.github.io/stylesheet.css */
 
 /* Top bar indicator */
-.cs-indicator-waiting { color: #3584e4; }
-.cs-indicator-running { color: #e5a50a; }
-.cs-indicator-failed { color: #e01b24; }
+.cs-indicator-waiting { color: #62a0ea; }
+.cs-indicator-running { color: #f8e45c; }
+.cs-indicator-failed { color: #ff6b6b; }
 
 .cs-badge {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: bold;
     min-width: 0;
-    margin-left: 2px;
+    margin-left: 1px;
+    color: #f8e45c;
+}
+
+.cs-term-icon {
+    margin-left: 4px;
+    color: #62a0ea;
+}
+
+.cs-term-icon:hover {
+    color: #99c1f1;
+}
+
+/* Hover log popup */
+.cs-log-popup {
+    background-color: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px;
+    width: 420px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.cs-log-popup-title {
+    font-weight: bold;
+    font-size: 12px;
+    color: #f8e45c;
+    margin-bottom: 6px;
+}
+
+.cs-log-popup-scroll {
+    max-height: 250px;
+}
+
+.cs-log-popup-text {
+    font-family: monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 4px;
 }
 
 /* Popover */
