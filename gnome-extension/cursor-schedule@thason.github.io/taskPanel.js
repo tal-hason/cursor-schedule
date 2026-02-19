@@ -7,6 +7,7 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
+import {DateTimePicker} from './datePicker.js';
 
 const STATUS_ICONS = {
     waiting: 'content-loading-symbolic',
@@ -145,41 +146,29 @@ class TaskPanel extends St.BoxLayout {
 
     _showRescheduleInput(taskId) {
         this._rescheduleBox?.destroy();
-        const box = new St.BoxLayout({style_class: 'cs-reschedule-box'});
-        const label = new St.Label({text: `Reschedule ${taskId}:`, style_class: 'cs-reschedule-label'});
-        const entry = new St.Entry({
-            style_class: 'cs-reschedule-entry',
-            hint_text: 'e.g. 2026-03-01 09:00 or Mon *-*-* 09:00',
-            x_expand: true, can_focus: true,
-        });
-        const applyBtn = new St.Button({style_class: 'cs-action-btn cs-apply-btn', child:
-            new St.Icon({icon_name: 'emblem-ok-symbolic', icon_size: 14})});
+        const box = new St.BoxLayout({vertical: true, style_class: 'cs-reschedule-box'});
+        const header = new St.BoxLayout({style_class: 'cs-reschedule-header'});
+        header.add_child(new St.Label({text: `Reschedule: ${taskId}`, x_expand: true, style_class: 'cs-reschedule-label'}));
         const cancelBtn = new St.Button({style_class: 'cs-action-btn', child:
             new St.Icon({icon_name: 'window-close-symbolic', icon_size: 14})});
-
-        applyBtn.connect('clicked', () => {
-            const schedule = entry.get_text().trim();
-            if (schedule) {
-                this._store.rescheduleTask(taskId, schedule)
-                    .then(() => { this._rescheduleBox?.destroy(); this._rescheduleBox = null; return this.refresh(); })
-                    .catch(e => console.error(`[cursor-schedule] reschedule: ${e.message}`));
-            }
-            return Clutter.EVENT_STOP;
-        });
         cancelBtn.connect('clicked', () => {
             this._rescheduleBox?.destroy();
             this._rescheduleBox = null;
             return Clutter.EVENT_STOP;
         });
-        entry.get_clutter_text().connect('activate', () => applyBtn.emit('clicked'));
+        header.add_child(cancelBtn);
+        box.add_child(header);
 
-        box.add_child(label);
-        box.add_child(entry);
-        box.add_child(applyBtn);
-        box.add_child(cancelBtn);
+        const picker = new DateTimePicker();
+        picker.connect('picked', (_src, schedule) => {
+            this._store.rescheduleTask(taskId, schedule)
+                .then(() => { this._rescheduleBox?.destroy(); this._rescheduleBox = null; return this.refresh(); })
+                .catch(e => console.error(`[cursor-schedule] reschedule: ${e.message}`));
+        });
+        box.add_child(picker);
+
         this._rescheduleBox = box;
         this.insert_child_below(box, this._taskBox.get_parent());
-        entry.grab_key_focus();
     }
 
     async _onRowClick(taskId) {

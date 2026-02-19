@@ -127,28 +127,123 @@
 .cs-status-cancelled .cs-status-icon { color: #9a9996; }
 
 .cs-reschedule-box {
-    padding: 6px 8px;
-    spacing: 6px;
-    border-radius: 6px;
+    padding: 8px;
+    border-radius: 8px;
     background-color: rgba(255, 255, 255, 0.06);
     margin: 4px 0;
 }
 
+.cs-reschedule-header {
+    spacing: 8px;
+    margin-bottom: 4px;
+}
+
 .cs-reschedule-label {
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Date/Time Picker */
+.cs-picker { spacing: 4px; }
+
+.cs-month-nav {
+    spacing: 8px;
+    padding: 2px 0;
+}
+
+.cs-month-label {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.cs-nav-btn {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.cs-nav-btn:hover { background-color: rgba(255, 255, 255, 0.12); }
+
+.cs-day-header { spacing: 0; }
+
+.cs-day-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    min-width: 32px;
+    text-align: center;
+}
+
+.cs-day-grid { spacing: 1px; }
+.cs-day-row { spacing: 0; }
+
+.cs-day-btn {
+    min-width: 32px;
+    min-height: 28px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.cs-day-btn:hover { background-color: rgba(255, 255, 255, 0.12); }
+
+.cs-day-selected {
+    background-color: #3584e4;
+    color: white;
+    font-weight: bold;
+}
+
+.cs-time-picker {
+    spacing: 6px;
+    padding: 6px 0;
+}
+
+.cs-time-label {
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
 }
 
-.cs-reschedule-entry {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    min-width: 200px;
+.cs-time-value {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 28px;
+    text-align: center;
 }
 
-.cs-apply-btn:hover {
-    background-color: rgba(51, 209, 122, 0.25);
+.cs-time-colon {
+    font-size: 16px;
+    font-weight: bold;
 }
+
+.cs-spin-btn {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.cs-spin-btn:hover { background-color: rgba(255, 255, 255, 0.12); }
+
+.cs-picker-confirm {
+    spacing: 8px;
+    padding-top: 4px;
+}
+
+.cs-picker-preview {
+    font-family: monospace;
+    font-size: 12px;
+    color: #62a0ea;
+}
+
+.cs-picker-ok {
+    padding: 4px 12px;
+    border-radius: 4px;
+    background-color: #3584e4;
+    color: white;
+    font-weight: bold;
+}
+
+.cs-picker-ok:hover { background-color: #4a9cf5; }
 
 .cs-empty {
     font-style: italic;
