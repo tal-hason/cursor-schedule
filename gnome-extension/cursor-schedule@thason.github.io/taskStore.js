@@ -23,7 +23,13 @@ export class TaskStore {
         const custom = this._settings?.get_string('binary-path');
         if (custom && custom.length > 0)
             return custom;
-        return GLib.find_program_in_path('cursor-schedule') ?? 'cursor-schedule';
+        const fromPath = GLib.find_program_in_path('cursor-schedule');
+        if (fromPath)
+            return fromPath;
+        const localBin = GLib.build_filenamev([GLib.get_home_dir(), '.local', 'bin', 'cursor-schedule']);
+        if (GLib.file_test(localBin, GLib.FileTest.IS_EXECUTABLE))
+            return localBin;
+        return 'cursor-schedule';
     }
 
     _getLogLines() {
