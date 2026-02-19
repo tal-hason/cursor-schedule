@@ -1,12 +1,31 @@
 /* gnome-extension/cursor-schedule@thason.github.io/stylesheet.css */
 
 .cs-panel {
-    width: 380px;
+    width: 400px;
     padding: 8px;
 }
 
+.cs-header {
+    padding: 4px 8px 8px;
+    spacing: 8px;
+}
+
+.cs-title {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.cs-header-btn {
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.cs-header-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
 .cs-scroll {
-    max-height: 240px;
+    max-height: 220px;
 }
 
 .cs-task-list {
@@ -37,6 +56,19 @@
     color: rgba(255, 255, 255, 0.6);
 }
 
+.cs-actions {
+    spacing: 2px;
+}
+
+.cs-action-btn {
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.cs-action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
 .cs-status-waiting .cs-status-icon { color: #3584e4; }
 .cs-status-running .cs-status-icon { color: #e5a50a; }
 .cs-status-completed .cs-status-icon { color: #33d17a; }
@@ -49,12 +81,22 @@
     padding: 12px;
 }
 
-.cs-log-scroll {
-    max-height: 160px;
-    margin-top: 8px;
+.cs-log-header {
+    padding: 6px 8px 2px;
+    spacing: 8px;
     border-top-width: 1px;
     border-color: rgba(255, 255, 255, 0.12);
-    padding-top: 8px;
+    margin-top: 6px;
+}
+
+.cs-log-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.cs-log-scroll {
+    max-height: 160px;
 }
 
 .cs-log-viewer {

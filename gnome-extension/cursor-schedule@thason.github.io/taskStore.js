@@ -96,6 +96,26 @@ export class TaskStore {
         await this.runCli(['sync']);
     }
 
+    async runTask(taskId) {
+        await this.runCli(['run', taskId]);
+    }
+
+    async cancelTask(taskId) {
+        await this.runCli(['cancel', taskId]);
+    }
+
+    openTerminal(taskId) {
+        try {
+            const unit = `cursor-task-${taskId}.service`;
+            Gio.Subprocess.new(
+                ['gnome-terminal', '--', 'journalctl', '--user', '-u', unit, '-f', '--no-pager'],
+                Gio.SubprocessFlags.NONE,
+            );
+        } catch (e) {
+            console.error(`[cursor-schedule] terminal error: ${e.message}`);
+        }
+    }
+
     async fetchLogs(taskId) {
         const n = this._getLogLines();
         try {
