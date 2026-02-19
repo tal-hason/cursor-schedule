@@ -29,8 +29,10 @@ class TaskPanel extends St.BoxLayout {
         this.add_child(scroll);
 
         this._logLabel = new St.Label({style_class: 'cs-log-viewer', text: ''});
+        const logBox = new St.BoxLayout({vertical: true});
+        logBox.add_child(this._logLabel);
         const logScroll = new St.ScrollView({style_class: 'cs-log-scroll'});
-        logScroll.set_child(this._logLabel);
+        logScroll.set_child(logBox);
         this.add_child(logScroll);
     }
 
