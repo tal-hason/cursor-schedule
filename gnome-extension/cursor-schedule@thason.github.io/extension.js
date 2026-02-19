@@ -115,7 +115,7 @@ export default class CursorScheduleExtension extends Extension {
 
     _scheduleHidePopup() {
         this._cancelHidePopup();
-        this._hideTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+        this._hideTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 15000, () => {
             this._hideTimeoutId = 0;
             if (!this._logPopup?.hover && !this._termIcon?.hover)
                 this._hideLogPopup();
