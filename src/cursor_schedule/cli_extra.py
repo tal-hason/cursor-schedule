@@ -4,13 +4,15 @@
 # 2. [Pattern]: Imported and registered in cli.py via cli.add_command().
 # 3. [Gotcha]: uninstall removes system-wide artifacts -- prompt for confirmation.
 
+import re
 import shutil
 import subprocess
 from pathlib import Path
 
 import click
 
-from cursor_schedule.store import list_tasks, remove_task, sync_from_systemd
+from cursor_schedule.store import REPORTS_DIR, list_tasks, remove_task
+from cursor_schedule.store_sync import sync_from_systemd
 from cursor_schedule.systemd import remove_units
 
 EXT_UUID = "cursor-schedule@thason.github.io"
@@ -26,6 +28,45 @@ def sync():
         click.secho("Task statuses updated from systemd.", fg="green")
     else:
         click.echo("All task statuses are current.")
+
+
+@click.command()
+@click.argument("task_id")
+@click.option("--all", "show_all", is_flag=True, help="List all reports with timestamps.")
+@click.option("--one-line", is_flag=True, help="Print single outcome line (for notifications).")
+def report(task_id, show_all, one_line):
+    """View the execution report for a task."""
+    from cursor_schedule.store import get_task
+    task = get_task(task_id)
+    if not task:
+        click.secho(f"Error: task '{task_id}' not found.", fg="red")
+        raise SystemExit(1)
+    report_dir = REPORTS_DIR / task_id
+    if not report_dir.exists():
+        if one_line:
+            click.echo(f"Task {task_id} finished")
+            return
+        click.secho("No reports found.", fg="yellow")
+        return
+    reports = sorted(report_dir.glob("*.md"), reverse=True)
+    if not reports:
+        if one_line:
+            click.echo(f"Task {task_id} finished")
+            return
+        click.secho("No reports found.", fg="yellow")
+        return
+    if show_all:
+        for r in reports:
+            click.echo(f"  {r.stem}  {r}")
+        return
+    latest = reports[0]
+    content = latest.read_text()
+    if one_line:
+        match = re.search(r"\*\*Outcome\*\*:\s*(.+)", content)
+        outcome = match.group(1).strip() if match else "completed"
+        click.echo(f"{task_id}: {outcome}")
+        return
+    click.echo(content)
 
 
 @click.command()

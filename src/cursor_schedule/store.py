@@ -7,7 +7,6 @@
 import fcntl
 import json
 import os
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -15,8 +14,11 @@ STORE_DIR = Path(os.environ.get(
     "CURSOR_SCHEDULE_DATA", Path.home() / ".local/share/cursor-schedule"
 ))
 STORE_FILE = STORE_DIR / "tasks.json"
-SCHEMA_VERSION = 1
+REPORTS_DIR = STORE_DIR / "reports"
+SCHEMA_VERSION = 2
 UNIT_PREFIX = "cursor-task-"
+
+_V2_DEFAULTS = {"guardrails": [], "summary_template": None, "report_path": None, "report_status": None}
 
 
 def _ensure_store():
@@ -47,7 +49,11 @@ def _read_store():
     finally:
         fcntl.flock(fd, fcntl.LOCK_UN)
         os.close(fd)
-    return json.loads(raw)
+    data = json.loads(raw)
+    for task in data.get("tasks", []):
+        for key, default in _V2_DEFAULTS.items():
+            task.setdefault(key, default)
+    return data
 
 
 def list_tasks(status_filter=None):
@@ -58,12 +64,15 @@ def list_tasks(status_filter=None):
     return tasks
 
 
-def add_task(task_id, name, schedule, prompt, workspace, model=None, plan_path=None, auto_remove=False):
+def add_task(task_id, name, schedule, prompt, workspace, model=None,
+             plan_path=None, auto_remove=False, guardrails=None, summary_template=None):
     data = _read_store()
     task = {
         "id": task_id, "name": name, "schedule": schedule, "prompt": prompt,
         "plan_path": plan_path, "workspace": workspace, "model": model,
         "status": "waiting", "auto_remove": auto_remove,
+        "guardrails": guardrails or [], "summary_template": summary_template,
+        "report_path": None, "report_status": None,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "completed_at": None, "exit_code": None,
     }
@@ -89,52 +98,3 @@ def update_task(task_id, **fields):
             task.update(fields)
             break
     _atomic_write(data)
-
-
-def sync_from_systemd():
-    data = _read_store()
-    changed = False
-    for task in data["tasks"]:
-        if task["status"] not in ("waiting", "running"):
-            continue
-        unit = f"{UNIT_PREFIX}{task['id']}.service"
-        try:
-            result = subprocess.run(
-                ["systemctl", "--user", "show", unit,
-                 "--property=ActiveState,SubState,ExecMainExitTimestamp,ExecMainStatus"],
-                capture_output=True, text=True, timeout=5,
-            )
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            continue
-        props = dict(
-            line.split("=", 1) for line in result.stdout.strip().splitlines() if "=" in line
-        )
-        active = props.get("ActiveState", "")
-        exit_code = props.get("ExecMainStatus", "")
-        timestamp = props.get("ExecMainExitTimestamp", "")
-
-        has_run = bool(timestamp and timestamp.strip())
-
-        if active == "activating" and task["status"] != "running":
-            task["status"] = "running"
-            changed = True
-        elif active == "inactive" and has_run and exit_code != "0" and task["status"] != "failed":
-            task["status"] = "failed"
-            task["exit_code"] = int(exit_code)
-            task["completed_at"] = timestamp
-            changed = True
-        elif active == "inactive" and has_run and exit_code == "0" and task["status"] != "completed":
-            task["status"] = "completed"
-            task["exit_code"] = 0
-            task["completed_at"] = timestamp
-            changed = True
-
-    auto_rm = [t["id"] for t in data["tasks"]
-               if t.get("auto_remove") and t["status"] in ("completed", "failed")]
-    if auto_rm:
-        data["tasks"] = [t for t in data["tasks"] if t["id"] not in auto_rm]
-        changed = True
-
-    if changed:
-        _atomic_write(data)
-    return changed

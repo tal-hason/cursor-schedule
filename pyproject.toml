@@ -26,6 +26,9 @@ dependencies = [
     "click>=8.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [project.scripts]
 cursor-schedule = "cursor_schedule.cli:cli"
 

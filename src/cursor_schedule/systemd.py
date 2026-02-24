@@ -1,8 +1,8 @@
 # src/cursor_schedule/systemd.py
 # @ai-rules:
 # 1. [Constraint]: This module is the sole owner of systemd unit files. No other module calls systemctl.
-# 2. [Pattern]: Always daemon-reload after creating/modifying units.
-# 3. [Gotcha]: ExecStartPost may not run on SIGKILL -- sync_from_systemd() in store.py handles that.
+# 2. [Pattern]: ExecStart delegates to cursor-schedule _exec; runner.py handles agent invocation.
+# 3. [Gotcha]: ExecStartPost may not run on SIGKILL -- sync_from_systemd() handles that.
 
 import shutil
 import subprocess
@@ -20,26 +20,21 @@ def _daemon_reload():
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True, timeout=10)
 
 
-def _build_exec_start(workspace, prompt, model=None):
-    agent = shutil.which("cursor-agent")
-    if not agent:
-        raise FileNotFoundError("cursor-agent not found on PATH")
-    parts = [agent, "--print", "--trust", f"--workspace={workspace}"]
-    if model:
-        parts.append(f"--model={model}")
-    parts.append(prompt)
-    return " ".join(_quote(p) for p in parts)
-
-
-def _quote(s):
-    if " " in s or '"' in s or "'" in s:
-        return f'"{s}"'
-    return s
+def _runtime_path():
+    paths = set()
+    for name in ("cursor-schedule", "cursor-agent"):
+        found = shutil.which(name)
+        if found:
+            paths.add(str(Path(found).parent))
+    paths.update(["/usr/local/bin", "/usr/bin", "/bin"])
+    home_local = str(Path.home() / ".local/bin")
+    paths.add(home_local)
+    return ":".join(paths)
 
 
 def create_units(task_id, schedule, workspace, prompt, model=None):
     UNIT_DIR.mkdir(parents=True, exist_ok=True)
-    exec_start = _build_exec_start(workspace, prompt, model)
+    cs_bin = shutil.which("cursor-schedule") or "cursor-schedule"
 
     service = _unit_path(task_id, ".service")
     service.write_text(
@@ -47,11 +42,13 @@ def create_units(task_id, schedule, workspace, prompt, model=None):
         f"Description=Cursor Agent Task: {task_id}\n\n"
         f"[Service]\n"
         f"Type=oneshot\n"
-        f"ExecStart={exec_start}\n"
+        f"ExecStart={cs_bin} _exec {task_id}\n"
         f"ExecStartPost=/bin/sh -c '"
-        f"notify-send \"cursor-schedule\" \"Task {task_id} finished (exit $EXIT_STATUS)\"'\n"
+        f'MSG=$({cs_bin} report {task_id} --one-line 2>/dev/null) || '
+        f'MSG="Task {task_id} finished (exit $EXIT_STATUS)"; '
+        f"notify-send \"cursor-schedule\" \"$MSG\"'\n"
         f"Environment=HOME={Path.home()}\n"
-        f"Environment=PATH={_agent_path()}\n"
+        f"Environment=PATH={_runtime_path()}\n"
     )
 
     timer = _unit_path(task_id, ".timer")
@@ -64,7 +61,6 @@ def create_units(task_id, schedule, workspace, prompt, model=None):
         f"[Install]\n"
         f"WantedBy=timers.target\n"
     )
-
     _daemon_reload()
 
 
@@ -96,10 +92,3 @@ def start_service(task_id):
     subprocess.run(
         ["systemctl", "--user", "start", "--no-block", unit], check=True, timeout=10,
     )
-
-
-def _agent_path():
-    agent = shutil.which("cursor-agent")
-    if agent:
-        return str(Path(agent).parent) + ":/usr/bin:/bin"
-    return "/usr/local/bin:/usr/bin:/bin"

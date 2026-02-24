@@ -273,16 +273,36 @@
 
 .cs-log-header {
     padding: 6px 8px 2px;
-    spacing: 8px;
+    spacing: 4px;
     border-top-width: 1px;
     border-color: rgba(255, 255, 255, 0.12);
     margin-top: 6px;
 }
 
-.cs-log-title {
+.cs-tab {
+    padding: 3px 10px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
+}
+
+.cs-tab-active {
+    background-color: rgba(53, 132, 228, 0.35);
+    color: #99c1f1;
+}
+
+.cs-tab-inactive {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.cs-tab-inactive:hover {
+    background-color: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.7);
+}
+
+.cs-report-missing {
+    color: #f8e45c;
+    font-style: italic;
 }
 
 .cs-log-scroll {

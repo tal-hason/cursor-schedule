@@ -15,8 +15,9 @@ import click
 
 from cursor_schedule import __version__
 from cursor_schedule.store import (
-    add_task, get_task, list_tasks, remove_task, sync_from_systemd, update_task,
+    add_task, get_task, list_tasks, remove_task, update_task,
 )
+from cursor_schedule.store_sync import sync_from_systemd
 from cursor_schedule.systemd import (
     create_units, enable_timer, remove_units, start_service,
 )
@@ -28,12 +29,15 @@ def cli():
     """Scheduled task execution for Cursor Agent."""
 
 
-from cursor_schedule.cli_extra import sync, purge, remove, reschedule, uninstall  # noqa: E402
+from cursor_schedule.cli_extra import sync, purge, remove, reschedule, report, uninstall  # noqa: E402
+from cursor_schedule.runner import exec_cmd  # noqa: E402
 cli.add_command(sync)
 cli.add_command(purge)
 cli.add_command(remove)
 cli.add_command(reschedule)
+cli.add_command(report)
 cli.add_command(uninstall)
+cli.add_command(exec_cmd)
 
 
 @cli.command()
@@ -45,7 +49,11 @@ cli.add_command(uninstall)
 @click.option("--plan", "plan_path", default=None, type=click.Path(), help="Plan file path.")
 @click.option("--force", is_flag=True, help="Overwrite existing task with same name.")
 @click.option("--rm", "auto_remove", is_flag=True, help="Auto-remove task after completion.")
-def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove):
+@click.option("--guardrails", "-g", multiple=True, help="Constraint rule (repeatable).")
+@click.option("--guardrails-file", type=click.Path(exists=True), help="File with guardrail rules (one per line).")
+@click.option("--summary-template", type=click.Path(exists=True), help="Custom summary template file.")
+def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove,
+        guardrails, guardrails_file, summary_template):
     """Register a new scheduled task."""
     if not shutil.which("cursor-agent"):
         click.secho("Error: cursor-agent not found on PATH.", fg="red")
@@ -57,13 +65,20 @@ def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove)
     if existing and force:
         remove_units(name)
         remove_task(name)
+
+    all_guardrails = list(guardrails)
+    if guardrails_file:
+        all_guardrails.extend(Path(guardrails_file).read_text().strip().splitlines())
+    tmpl = Path(summary_template).read_text() if summary_template else None
+
     try:
         create_units(name, schedule, workspace, prompt, model)
         enable_timer(name)
     except Exception as e:
         click.secho(f"Error creating systemd units: {e}", fg="red")
         sys.exit(2)
-    add_task(name, name, schedule, prompt, workspace, model, plan_path, auto_remove)
+    add_task(name, name, schedule, prompt, workspace, model, plan_path, auto_remove,
+             guardrails=all_guardrails, summary_template=tmpl)
     rm_note = " (auto-remove on completion)" if auto_remove else ""
     click.secho(f"Task '{name}' scheduled: {schedule}{rm_note}", fg="green")
 

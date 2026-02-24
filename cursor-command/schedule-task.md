@@ -21,11 +21,18 @@ You are helping the user schedule, reschedule, or manage Cursor Agent tasks via 
    - **One-time**: Task is auto-removed after completion. Uses the `--rm` flag.
    - **Persistent**: Task stays in the list after execution. Can be rerun or rescheduled later.
 
-5. **Ask model** (optional): "Which model? (press enter for default)" Options available via `cursor-agent --list-models`.
+5. **Ask guardrails** (optional): "Any constraints for this task? Examples:"
+   - "Only modify files in src/"
+   - "Do not install new dependencies"
+   - "Do not delete any files"
+   - "Stay within the tests/ directory"
+   Each constraint becomes a `--guardrails` flag. Skip if the user has none.
 
-6. **Generate name**: Suggest a task ID slugified from the prompt (lowercase, hyphens, max 30 chars). Let the user override.
+6. **Ask model** (optional): "Which model? (press enter for default)" Options available via `cursor-agent --list-models`.
 
-7. **Confirm and execute**:
+7. **Generate name**: Suggest a task ID slugified from the prompt (lowercase, hyphens, max 30 chars). Let the user override.
+
+8. **Confirm and execute**:
 
    ```bash
    cursor-schedule add \
@@ -34,10 +41,12 @@ You are helping the user schedule, reschedule, or manage Cursor Agent tasks via 
      --schedule "<oncalendar>" \
      --prompt "<text>" \
      [--model <model>] \
-     [--rm]
+     [--rm] \
+     [--guardrails "<constraint1>"] \
+     [--guardrails "<constraint2>"]
    ```
 
-8. **Report**: Show the output. Then run `cursor-schedule list` to display all tasks.
+9. **Report**: Show the output. Then run `cursor-schedule list` to display all tasks.
 
 ### Reschedule Existing Task
 
@@ -62,3 +71,5 @@ If the user asks to remove, cancel, or rerun a task, use these directly:
 - **Cancel**: `cursor-schedule cancel <id>`
 - **Rerun**: `cursor-schedule run <id>`
 - **View logs**: `cursor-schedule logs <id>`
+- **View report**: `cursor-schedule report <id>`
+- **Report summary**: `cursor-schedule report <id> --one-line`
