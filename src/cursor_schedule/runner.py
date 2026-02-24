@@ -1,6 +1,6 @@
 # src/cursor_schedule/runner.py
 # @ai-rules:
-# 1. [Constraint]: Template Method -- fixed execution skeleton with injectable guardrails and template.
+# 1. [Constraint]: Template Method -- fixed skeleton with injectable guardrails.
 # 2. [Pattern]: Guardrails injected as prompt-prepended text (probe FAIL path, no .mdc files).
 # 3. [Gotcha]: Must exit with cursor-agent's exit code, not its own.
 
@@ -13,7 +13,6 @@ import click
 
 from cursor_schedule.store import REPORTS_DIR, get_task
 from cursor_schedule.store_sync import set_report_status
-
 
 DEFAULT_SUMMARY = (
     "## Post-Execution Report\n"

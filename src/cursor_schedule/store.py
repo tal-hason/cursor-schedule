@@ -10,15 +10,20 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-STORE_DIR = Path(os.environ.get(
-    "CURSOR_SCHEDULE_DATA", Path.home() / ".local/share/cursor-schedule"
-))
+STORE_DIR = Path(
+    os.environ.get("CURSOR_SCHEDULE_DATA", Path.home() / ".local/share/cursor-schedule")
+)
 STORE_FILE = STORE_DIR / "tasks.json"
 REPORTS_DIR = STORE_DIR / "reports"
 SCHEMA_VERSION = 2
 UNIT_PREFIX = "cursor-task-"
 
-_V2_DEFAULTS = {"guardrails": [], "summary_template": None, "report_path": None, "report_status": None}
+_V2_DEFAULTS = {
+    "guardrails": [],
+    "summary_template": None,
+    "report_path": None,
+    "report_status": None,
+}
 
 
 def _ensure_store():
@@ -64,17 +69,36 @@ def list_tasks(status_filter=None):
     return tasks
 
 
-def add_task(task_id, name, schedule, prompt, workspace, model=None,
-             plan_path=None, auto_remove=False, guardrails=None, summary_template=None):
+def add_task(
+    task_id,
+    name,
+    schedule,
+    prompt,
+    workspace,
+    model=None,
+    plan_path=None,
+    auto_remove=False,
+    guardrails=None,
+    summary_template=None,
+):
     data = _read_store()
     task = {
-        "id": task_id, "name": name, "schedule": schedule, "prompt": prompt,
-        "plan_path": plan_path, "workspace": workspace, "model": model,
-        "status": "waiting", "auto_remove": auto_remove,
-        "guardrails": guardrails or [], "summary_template": summary_template,
-        "report_path": None, "report_status": None,
+        "id": task_id,
+        "name": name,
+        "schedule": schedule,
+        "prompt": prompt,
+        "plan_path": plan_path,
+        "workspace": workspace,
+        "model": model,
+        "status": "waiting",
+        "auto_remove": auto_remove,
+        "guardrails": guardrails or [],
+        "summary_template": summary_template,
+        "report_path": None,
+        "report_status": None,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "completed_at": None, "exit_code": None,
+        "completed_at": None,
+        "exit_code": None,
     }
     data["tasks"].append(task)
     _atomic_write(data)

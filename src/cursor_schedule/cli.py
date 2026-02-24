@@ -15,11 +15,18 @@ import click
 
 from cursor_schedule import __version__
 from cursor_schedule.store import (
-    add_task, get_task, list_tasks, remove_task, update_task,
+    add_task,
+    get_task,
+    list_tasks,
+    remove_task,
+    update_task,
 )
 from cursor_schedule.store_sync import sync_from_systemd
 from cursor_schedule.systemd import (
-    create_units, enable_timer, remove_units, start_service,
+    create_units,
+    enable_timer,
+    remove_units,
+    start_service,
 )
 
 
@@ -29,8 +36,16 @@ def cli():
     """Scheduled task execution for Cursor Agent."""
 
 
-from cursor_schedule.cli_extra import sync, purge, remove, reschedule, report, uninstall  # noqa: E402
+from cursor_schedule.cli_extra import (  # noqa: E402
+    purge,
+    remove,
+    report,
+    reschedule,
+    sync,
+    uninstall,
+)
 from cursor_schedule.runner import exec_cmd  # noqa: E402
+
 cli.add_command(sync)
 cli.add_command(purge)
 cli.add_command(remove)
@@ -50,10 +65,27 @@ cli.add_command(exec_cmd)
 @click.option("--force", is_flag=True, help="Overwrite existing task with same name.")
 @click.option("--rm", "auto_remove", is_flag=True, help="Auto-remove task after completion.")
 @click.option("--guardrails", "-g", multiple=True, help="Constraint rule (repeatable).")
-@click.option("--guardrails-file", type=click.Path(exists=True), help="File with guardrail rules (one per line).")
-@click.option("--summary-template", type=click.Path(exists=True), help="Custom summary template file.")
-def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove,
-        guardrails, guardrails_file, summary_template):
+@click.option(
+    "--guardrails-file",
+    type=click.Path(exists=True),
+    help="File with guardrail rules (one per line).",
+)
+@click.option(
+    "--summary-template", type=click.Path(exists=True), help="Custom summary template file."
+)
+def add(
+    name,
+    workspace,
+    prompt,
+    schedule,
+    model,
+    plan_path,
+    force,
+    auto_remove,
+    guardrails,
+    guardrails_file,
+    summary_template,
+):
     """Register a new scheduled task."""
     if not shutil.which("cursor-agent"):
         click.secho("Error: cursor-agent not found on PATH.", fg="red")
@@ -77,8 +109,18 @@ def add(name, workspace, prompt, schedule, model, plan_path, force, auto_remove,
     except Exception as e:
         click.secho(f"Error creating systemd units: {e}", fg="red")
         sys.exit(2)
-    add_task(name, name, schedule, prompt, workspace, model, plan_path, auto_remove,
-             guardrails=all_guardrails, summary_template=tmpl)
+    add_task(
+        name,
+        name,
+        schedule,
+        prompt,
+        workspace,
+        model,
+        plan_path,
+        auto_remove,
+        guardrails=all_guardrails,
+        summary_template=tmpl,
+    )
     rm_note = " (auto-remove on completion)" if auto_remove else ""
     click.secho(f"Task '{name}' scheduled: {schedule}{rm_note}", fg="green")
 
@@ -99,8 +141,13 @@ def list_cmd(as_json, status_filter):
     click.echo(f"{'NAME':<24} {'SCHEDULE':<22} {'STATUS':<12}")
     click.echo("-" * 58)
     for t in tasks:
-        color = {"waiting": "blue", "running": "yellow", "completed": "green",
-                 "failed": "red", "cancelled": "white"}.get(t["status"], "white")
+        color = {
+            "waiting": "blue",
+            "running": "yellow",
+            "completed": "green",
+            "failed": "red",
+            "cancelled": "white",
+        }.get(t["status"], "white")
         click.echo(f"{t['id']:<24} {t['schedule']:<22} ", nl=False)
         click.secho(t["status"], fg=color)
 

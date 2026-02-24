@@ -6,7 +6,7 @@
 
 import subprocess
 
-from cursor_schedule.store import UNIT_PREFIX, _read_store, _atomic_write, REPORTS_DIR
+from cursor_schedule.store import UNIT_PREFIX, _atomic_write, _read_store
 
 
 def sync_from_systemd():
@@ -18,9 +18,16 @@ def sync_from_systemd():
         unit = f"{UNIT_PREFIX}{task['id']}.service"
         try:
             result = subprocess.run(
-                ["systemctl", "--user", "show", unit,
-                 "--property=ActiveState,SubState,ExecMainExitTimestamp,ExecMainStatus"],
-                capture_output=True, text=True, timeout=5,
+                [
+                    "systemctl",
+                    "--user",
+                    "show",
+                    unit,
+                    "--property=ActiveState,SubState,ExecMainExitTimestamp,ExecMainStatus",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
         except (subprocess.TimeoutExpired, FileNotFoundError):
             continue
@@ -41,14 +48,19 @@ def sync_from_systemd():
             task["exit_code"] = int(exit_code)
             task["completed_at"] = timestamp
             changed = True
-        elif active == "inactive" and has_run and exit_code == "0" and task["status"] != "completed":
+        elif (
+            active == "inactive" and has_run and exit_code == "0" and task["status"] != "completed"
+        ):
             task["status"] = "completed"
             task["exit_code"] = 0
             task["completed_at"] = timestamp
             changed = True
 
-    auto_rm = [t["id"] for t in data["tasks"]
-               if t.get("auto_remove") and t["status"] in ("completed", "failed")]
+    auto_rm = [
+        t["id"]
+        for t in data["tasks"]
+        if t.get("auto_remove") and t["status"] in ("completed", "failed")
+    ]
     if auto_rm:
         data["tasks"] = [t for t in data["tasks"] if t["id"] not in auto_rm]
         changed = True

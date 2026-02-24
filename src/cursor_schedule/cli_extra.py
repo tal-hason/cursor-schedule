@@ -37,6 +37,7 @@ def sync():
 def report(task_id, show_all, one_line):
     """View the execution report for a task."""
     from cursor_schedule.store import get_task
+
     task = get_task(task_id)
     if not task:
         click.secho(f"Error: task '{task_id}' not found.", fg="red")
@@ -74,6 +75,7 @@ def report(task_id, show_all, one_line):
 def remove(task_id):
     """Remove a single task and its systemd units."""
     from cursor_schedule.store import get_task
+
     task = get_task(task_id)
     if not task:
         click.secho(f"Error: task '{task_id}' not found.", fg="red")
@@ -89,7 +91,8 @@ def remove(task_id):
 def reschedule(task_id, schedule):
     """Change the schedule of an existing task."""
     from cursor_schedule.store import get_task, update_task
-    from cursor_schedule.systemd import remove_units, create_units, enable_timer
+    from cursor_schedule.systemd import create_units, enable_timer, remove_units
+
     task = get_task(task_id)
     if not task:
         click.secho(f"Error: task '{task_id}' not found.", fg="red")
@@ -109,11 +112,12 @@ def purge(completed, failed, purge_all):
     """Remove finished tasks and their systemd units."""
     targets = []
     for task in list_tasks():
-        if purge_all and task["status"] in ("completed", "failed", "cancelled"):
-            targets.append(task)
-        elif completed and task["status"] == "completed":
-            targets.append(task)
-        elif failed and task["status"] == "failed":
+        st = task["status"]
+        if (
+            (purge_all and st in ("completed", "failed", "cancelled"))
+            or (completed and st == "completed")
+            or (failed and st == "failed")
+        ):
             targets.append(task)
     if not targets:
         click.echo("Nothing to purge.")
@@ -126,7 +130,9 @@ def purge(completed, failed, purge_all):
 
 
 @click.command()
-@click.option("--purge", "full_purge", is_flag=True, help="Also remove task data and container image.")
+@click.option(
+    "--purge", "full_purge", is_flag=True, help="Also remove task data and container image."
+)
 @click.confirmation_option(prompt="This will uninstall cursor-schedule. Continue?")
 def uninstall(full_purge):
     """Uninstall cursor-schedule from this system."""
@@ -139,6 +145,7 @@ def uninstall(full_purge):
         click.echo(f"  Removed slash command: {SLASH_CMD}")
     if full_purge:
         from cursor_schedule.store import STORE_DIR
+
         if STORE_DIR.exists():
             shutil.rmtree(STORE_DIR)
             click.echo(f"  Removed task data: {STORE_DIR}")
@@ -150,7 +157,7 @@ def uninstall(full_purge):
 
 
 def _run_quiet(cmd):
-    try:
+    import contextlib
+
+    with contextlib.suppress(FileNotFoundError, subprocess.TimeoutExpired):
         subprocess.run(cmd, capture_output=True, timeout=15)
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass

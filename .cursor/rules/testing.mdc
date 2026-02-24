@@ -1,0 +1,32 @@
+---
+description: Test conventions for cursor-schedule
+globs: "tests/**/*.py"
+alwaysApply: false
+---
+
+# Testing Conventions
+
+## Fixtures
+
+- `tmp_store` -- isolates filesystem (STORE_DIR, STORE_FILE, REPORTS_DIR) to tmp_path
+- `sample_task` -- adds a "test-smoke" task to the isolated store
+- `mock_systemctl` -- patches subprocess.run in cursor_schedule.systemd (daemon-reload, enable, disable, start, remove)
+- `mock_agent` -- patches shutil.which in cursor_schedule.cli to return a fake cursor-agent path
+
+## Patterns
+
+- Use `click.testing.CliRunner` for CLI tests
+- Use `monkeypatch` for store isolation, `unittest.mock.patch` for subprocess mocking
+- Mock ALL subprocess.run calls -- never call real systemctl in tests
+- `tmp_store` and `mock_systemctl` are independent (no ordering dependency)
+
+## Naming
+
+- Test files: `test_<module>.py`
+- Test functions: `test_<behavior>`
+
+## Known Coupling
+
+- `store_sync.py` imports `_read_store` and `_atomic_write` (private API from store.py)
+- This is accepted coupling, tracked for promotion to public API in a follow-up
+- Tests should mock `cursor_schedule.store_sync.subprocess.run` separately from `cursor_schedule.systemd.subprocess.run`

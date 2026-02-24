@@ -1,6 +1,6 @@
 # src/cursor_schedule/systemd.py
 # @ai-rules:
-# 1. [Constraint]: This module is the sole owner of systemd unit files. No other module calls systemctl.
+# 1. [Constraint]: Sole owner of systemd unit files. No other module calls systemctl.
 # 2. [Pattern]: ExecStart delegates to cursor-schedule _exec; runner.py handles agent invocation.
 # 3. [Gotcha]: ExecStartPost may not run on SIGKILL -- sync_from_systemd() handles that.
 
@@ -44,9 +44,9 @@ def create_units(task_id, schedule, workspace, prompt, model=None):
         f"Type=oneshot\n"
         f"ExecStart={cs_bin} _exec {task_id}\n"
         f"ExecStartPost=/bin/sh -c '"
-        f'MSG=$({cs_bin} report {task_id} --one-line 2>/dev/null) || '
+        f"MSG=$({cs_bin} report {task_id} --one-line 2>/dev/null) || "
         f'MSG="Task {task_id} finished (exit $EXIT_STATUS)"; '
-        f"notify-send \"cursor-schedule\" \"$MSG\"'\n"
+        f'notify-send "cursor-schedule" "$MSG"\'\n'
         f"Environment=HOME={Path.home()}\n"
         f"Environment=PATH={_runtime_path()}\n"
     )
@@ -67,7 +67,9 @@ def create_units(task_id, schedule, workspace, prompt, model=None):
 def enable_timer(task_id):
     unit = f"{UNIT_PREFIX}{task_id}.timer"
     subprocess.run(
-        ["systemctl", "--user", "enable", "--now", unit], check=True, timeout=10,
+        ["systemctl", "--user", "enable", "--now", unit],
+        check=True,
+        timeout=10,
     )
 
 
@@ -75,7 +77,8 @@ def disable_timer(task_id):
     unit = f"{UNIT_PREFIX}{task_id}.timer"
     subprocess.run(
         ["systemctl", "--user", "disable", "--now", unit],
-        capture_output=True, timeout=10,
+        capture_output=True,
+        timeout=10,
     )
 
 
@@ -90,5 +93,7 @@ def remove_units(task_id):
 def start_service(task_id):
     unit = f"{UNIT_PREFIX}{task_id}.service"
     subprocess.run(
-        ["systemctl", "--user", "start", "--no-block", unit], check=True, timeout=10,
+        ["systemctl", "--user", "start", "--no-block", unit],
+        check=True,
+        timeout=10,
     )

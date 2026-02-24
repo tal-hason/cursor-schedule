@@ -1,0 +1,25 @@
+---
+description: CI pipeline conventions for cursor-schedule
+globs: ".github/workflows/**"
+alwaysApply: false
+---
+
+# CI Conventions
+
+## Pipeline
+
+Four parallel jobs on push to main / PR to main:
+
+- **lint-python**: `ruff check src/ tests/` and `ruff format --check src/ tests/`
+- **lint-js**: `npm ci` then `npx eslint gnome-extension/`
+- **test**: `pip install -e '.[dev]'` then `pytest` (coverage uploaded to Codecov)
+- **build**: `python -m build` (wheel builds cleanly)
+
+## Requirements
+
+- All Python must pass ruff check + ruff format --check
+- All GJS must pass eslint
+- `python -m build` must succeed
+- No secrets in committed files
+- `package-lock.json` must be committed (required by `npm ci`)
+- Codecov threshold is advisory only (not enforced as a gate)
