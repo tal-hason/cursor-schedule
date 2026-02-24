@@ -1,11 +1,11 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.0", "setuptools-scm>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cursor-schedule"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Scheduled task execution for Cursor Agent via systemd timers"
 readme = "README.md"
 license = "MIT"
@@ -39,6 +39,10 @@ Issues = "https://github.com/thason/cursor-schedule/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
