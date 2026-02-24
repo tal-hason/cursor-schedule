@@ -24,8 +24,10 @@ def test_list_empty(tmp_store):
 
 def test_list_json_valid(sample_task, tmp_store):
     import json
+    from unittest.mock import patch
 
-    result = runner.invoke(cli, ["list", "--json"])
+    with patch("cursor_schedule.cli.sync_from_systemd"):
+        result = runner.invoke(cli, ["list", "--json"])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert "tasks" in data
