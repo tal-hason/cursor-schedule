@@ -3,6 +3,7 @@
 # The tool runs natively on the host (needs systemd, GNOME Shell, cursor-agent).
 
 FROM python:3.12-slim AS builder
+ARG SETUPTOOLS_SCM_PRETEND_VERSION
 WORKDIR /build
 COPY . .
 RUN pip install build && python -m build
