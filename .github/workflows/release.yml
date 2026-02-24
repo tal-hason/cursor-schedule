@@ -35,8 +35,10 @@ jobs:
       - name: Build and push container
         run: |
           TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
           IMAGE="ghcr.io/${{ github.repository_owner }}/cursor-schedule"
-          docker build -t "${IMAGE}:${TAG}" -t "${IMAGE}:latest" .
+          docker build --build-arg "SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION}" \
+            -t "${IMAGE}:${TAG}" -t "${IMAGE}:latest" .
           docker push "${IMAGE}:${TAG}"
           docker push "${IMAGE}:latest"
 
